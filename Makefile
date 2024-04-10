@@ -22,16 +22,24 @@ venv:
 	$(VENV)/bin/pip install tox
 	$(VENV)/bin/pip install -e .
 
+# Run everything in tox.ini's "tox.env_list" in tox venvs with system Python
+#   (except where other Python explicitly requested)
 test: venv
 	venv/bin/tox
 
+# Run unit tests with tox py39 venv
+# To make good use of TOX_ARGS, e.g. when developing locally, try something like
+#   `make TOX_ARGS=tests/unit/package_managers/test_pip.py test-unit` which will
+#   run *only* the unit tests for 'test_pip.py' (you can further drill down
+#   using standard pytest notation, i.e. "::")
 test-unit: venv
 	venv/bin/tox -e $(TOX_ENVLIST) -- $(TOX_ARGS)
 
+# Run integration tests in tox venv with system Python
 test-integration: venv
 	venv/bin/tox -e integration
 
-mock-unittest-data:
+mock-go-unittest-data:
 	hack/mock-unittest-data/gomod.sh
 
 generate-test-data: venv
@@ -45,6 +53,7 @@ build-image:
 build-pristine-image:
 	podman build --pull-always --no-cache -t localhost/cachi2:latest .
 
+# pip-compile dependencies *specifically* using Py3.9 and a fresh venv
 pip-compile: PYTHON_BIN := $(shell which python3.9)
 pip-compile: VENV := $(shell mktemp -d -u --tmpdir --suffix .venv pip_compileXXX)
 pip-compile:
