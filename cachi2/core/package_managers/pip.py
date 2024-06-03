@@ -156,6 +156,77 @@ class DistributionPackageInfo:
         }
 
 
+@dataclass
+class DownloadInfo:
+    """A class representing relevant information about an actual download...
+
+    ...regardless of type; i.e. *all* downloaded artifacts, whether pypi pkg or
+    tarball from URL, etc. must have download info.
+    Not all artifacts will have all fields, but there is a core which is required
+    """
+
+    meta_type: Literal["pypi", "vcs", "url"]
+    package: str
+    version: str
+    path: Path
+    kind: str
+    requirement_file: Union[Path, str]
+    missing_checksum: bool
+    checksum_matched: bool
+    package_type: Literal["sdist", "wheel", ""]
+
+    # begin optional
+
+    # URL
+    original_url: str
+    url_with_hash: str
+
+    # VCS
+    url: str
+    host: str
+    namespace: str
+    repo: str
+    ref: str
+
+    def __init__(self) -> None:
+        pass
+
+    @property
+    def info(self) -> dict[str, Any]:
+        """Return the appropriate fields for a given instance."""
+
+        retval = {
+            "package": self.package,
+            "version": self.version,
+            "path": self.path,
+            "kind": self.kind,
+            "requirement_file": self.requirement_file,
+            "missing_checksum": self.missing_checksum,
+            "checksum_matched": self.checksum_matched,
+            "package_type": self.package_type,
+        }
+
+        if self.meta_type == "vcs":
+            pass
+            # append to retval
+            # {
+            #     "url": self.url,
+            #     "host": self.host,
+            #     "namespace": self.namespace,
+            #     "repo": self.repo,
+            #     "ref": self.ref,
+            # }
+        elif self.meta_type == "url":
+            pass
+            # append to retval
+            # {
+            #     "original_url": self.original_url,
+            #     "url_with_hash": self.url_with_hash,
+            # }
+
+        return retval
+
+
 def fetch_pip_source(request: Request) -> RequestOutput:
     """Resolve and fetch pip dependencies for the given request."""
     components: list[Component] = []
